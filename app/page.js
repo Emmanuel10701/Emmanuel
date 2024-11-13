@@ -1,101 +1,102 @@
-import Image from "next/image";
+// pages/index.js
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [tasks, setTasks] = useState([]);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  // Fetch tasks when the component loads
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  // Function to fetch tasks from the API
+  async function fetchTasks() {
+    const response = await axios.get('/api/tasks');
+    setTasks(response.data);
+  }
+
+  // Function to add a new task
+  async function addTask() {
+    if (newTaskTitle.trim() === '') return; // Prevent empty tasks
+
+    await axios.post('/api/tasks', { title: newTaskTitle });
+    setNewTaskTitle(''); // Clear the input field
+    fetchTasks(); // Refresh the task list
+  }
+
+  // Function to toggle completion status of a task
+  async function toggleTaskCompletion(taskId, currentStatus) {
+    await axios.put(`/api/tasks/${taskId}`, { completed: !currentStatus });
+    fetchTasks(); // Refresh the task list
+  }
+
+  // Function to delete a task
+  async function deleteTask(taskId) {
+    await axios.delete(`/api/tasks/${taskId}`);
+    fetchTasks(); // Refresh the task list
+  }
+
+  return (
+    <div className="max-w-md mx-auto py-10">
+      <h1 className="text-2xl font-bold mb-6 text-center">Task Manager</h1>
+      
+      {/* Input field to add a new task */}
+      <div className="flex mb-6">
+        <input
+          type="text"
+          value={newTaskTitle}
+          onChange={(e) => setNewTaskTitle(e.target.value)}
+          placeholder="Add new task"
+          className="flex-1 p-2 border border-gray-300 rounded"
+        />
+        <button
+          onClick={addTask}
+          className="ml-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Add Task
+        </button>
+      </div>
+
+      {/* Task list */}
+      <ul className="space-y-4">
+        {tasks.map((task) => (
+          <li
+            key={task.id}
+            className={`flex items-center justify-between p-4 rounded shadow ${
+              task.completed ? 'bg-green-100' : 'bg-red-100'
+            }`}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            {/* Task Title */}
+            <span
+              className={`flex-1 ${
+                task.completed ? 'line-through text-gray-500' : 'text-gray-900'
+              }`}
+            >
+              {task.title}
+            </span>
+
+            {/* Buttons to mark complete/incomplete and delete */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => toggleTaskCompletion(task.id, task.completed)}
+                className={`px-2 py-1 rounded text-white ${
+                  task.completed ? 'bg-yellow-500' : 'bg-green-500'
+                }`}
+              >
+                {task.completed ? 'Undo' : 'Complete'}
+              </button>
+              <button
+                onClick={() => deleteTask(task.id)}
+                className="px-2 py-1 bg-red-500 text-white rounded"
+              >
+                Delete
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
