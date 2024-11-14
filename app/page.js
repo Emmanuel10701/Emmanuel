@@ -1,4 +1,3 @@
-// pages/index.js
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -6,43 +5,36 @@ export default function Home() {
   const [tasks, setTasks] = useState([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
 
-  // Fetch tasks when the component loads
   useEffect(() => {
     fetchTasks();
   }, []);
 
-  // Function to fetch tasks from the API
   async function fetchTasks() {
     const response = await axios.get('/api/tasks');
     setTasks(response.data);
   }
 
-  // Function to add a new task
   async function addTask() {
-    if (newTaskTitle.trim() === '') return; // Prevent empty tasks
-
+    if (newTaskTitle.trim() === '') return;
     await axios.post('/api/tasks', { title: newTaskTitle });
-    setNewTaskTitle(''); // Clear the input field
-    fetchTasks(); // Refresh the task list
+    setNewTaskTitle('');
+    fetchTasks();
   }
 
-  // Function to toggle completion status of a task
   async function toggleTaskCompletion(taskId, currentStatus) {
     await axios.put(`/api/tasks/${taskId}`, { completed: !currentStatus });
-    fetchTasks(); // Refresh the task list
+    fetchTasks();
   }
 
-  // Function to delete a task
   async function deleteTask(taskId) {
     await axios.delete(`/api/tasks/${taskId}`);
-    fetchTasks(); // Refresh the task list
+    fetchTasks();
   }
 
   return (
     <div className="max-w-md mx-auto py-10">
       <h1 className="text-2xl font-bold mb-6 text-center">Task Manager</h1>
       
-      {/* Input field to add a new task */}
       <div className="flex mb-6">
         <input
           type="text"
@@ -59,7 +51,6 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Task list */}
       <ul className="space-y-4">
         {tasks.map((task) => (
           <li
@@ -68,7 +59,6 @@ export default function Home() {
               task.completed ? 'bg-green-100' : 'bg-red-100'
             }`}
           >
-            {/* Task Title */}
             <span
               className={`flex-1 ${
                 task.completed ? 'line-through text-gray-500' : 'text-gray-900'
@@ -77,7 +67,6 @@ export default function Home() {
               {task.title}
             </span>
 
-            {/* Buttons to mark complete/incomplete and delete */}
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => toggleTaskCompletion(task.id, task.completed)}
